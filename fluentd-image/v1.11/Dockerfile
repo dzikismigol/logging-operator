@@ -31,6 +31,7 @@ RUN apk update \
  && gem install bigdecimal -v 1.4.4 \
  && gem install webrick \
  && gem install gelf -v 3.0.0 \
+ && gem install typhoeus \
  && gem install \
          specific_install \
          fluent-plugin-remote-syslog \
