@@ -32,6 +32,7 @@ RUN apk update \
  && gem install bigdecimal -v 1.4.4 \
  && gem install webrick \
  && gem install gelf -v 3.0.0 \
+ && gem install typhoeus \
  # Pin the elasticsearch-ruby library < 7.14.
  # See https://github.com/uken/fluent-plugin-elasticsearch/issues/912
  && gem install elasticsearch -v 7.13.3 \
