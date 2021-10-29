@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRedis(t *testing.T) {
@@ -45,6 +46,7 @@ buffer:
 	port 6379
     <buffer tag,time>
       @type file
+	  chunk_limit_size 8MB
       path /buffers/test.*.buffer
       retry_forever true
       timekey 1m
@@ -58,7 +60,7 @@ buffer:
 `
 
 	redis := &output.RedisOutputConfig{}
-	yaml.Unmarshal(CONFIG, redis)
+	require.NoError(t, yaml.Unmarshal(CONFIG, redis))
 	test := render.NewOutputPluginTest(t, redis)
 	test.DiffResult(expected)
 }

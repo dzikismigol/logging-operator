@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAwsElasticsearch(t *testing.T) {
@@ -56,6 +57,7 @@ buffer:
 	</endpoint>
 	<buffer tag,time>
 	  @type file
+	  chunk_limit_size 8MB
 	  path /buffers/test.*.buffer
 	  retry_forever true
 	  timekey 1m
@@ -65,7 +67,7 @@ buffer:
   </match>
 `
 	awsEs := &output.AwsElasticsearchOutputConfig{}
-	yaml.Unmarshal(CONFIG, awsEs)
+	require.NoError(t, yaml.Unmarshal(CONFIG, awsEs))
 	test := render.NewOutputPluginTest(t, awsEs)
 	test.DiffResult(expected)
 }

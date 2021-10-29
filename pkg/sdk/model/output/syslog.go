@@ -21,19 +21,19 @@ import (
 
 // +name:"Syslog"
 // +weight:"200"
-type _hugoSyslog interface{}
+type _hugoSyslog interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"[Syslog Output](https://github.com/cloudfoundry/fluent-plugin-syslog_rfc5424)"
 // Fluentd output plugin for remote syslog with RFC5424 headers logs.
-type _docSyslog interface{}
+type _docSyslog interface{} //nolint:deadcode,unused
 
 // +name:"Syslog"
 // +url:"https://github.com/cloudfoundry/fluent-plugin-syslog_rfc5424"
-// +version:"0.9.0.rc.5"
+// +version:"0.9.0.rc.8"
 // +description:"Output plugin writes events to syslog"
 // +status:"GA"
-type _metaSyslog interface{}
+type _metaSyslog interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 type SyslogOutputConfig struct {
@@ -47,7 +47,7 @@ type SyslogOutputConfig struct {
 	Insecure *bool `json:"insecure,omitempty"`
 	// file path to ca to trust
 	TrustedCaPath *secret.Secret `json:"trusted_ca_path,omitempty"`
-	// +docLink:"Format,../format/"
+	// +docLink:"Format,../format_rfc5424/"
 	Format *FormatRfc5424 `json:"format,omitempty"`
 	// +docLink:"Buffer,../buffer/"
 	Buffer *Buffer `json:"buffer,omitempty"`
@@ -94,7 +94,7 @@ type SyslogOutputConfig struct {
 //	</buffer>
 //  </match>
 // ```
-type _expSyslog interface{}
+type _expSyslog interface{} //nolint:deadcode,unused
 
 func (s *SyslogOutputConfig) ToDirective(secretLoader secret.SecretLoader, id string) (types.Directive, error) {
 	const pluginType = "syslog_rfc5424"
@@ -111,19 +111,21 @@ func (s *SyslogOutputConfig) ToDirective(secretLoader secret.SecretLoader, id st
 	} else {
 		syslog.Params = params
 	}
-	if s.Buffer != nil {
-		if buffer, err := s.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			syslog.SubDirectives = append(syslog.SubDirectives, buffer)
-		}
+	if s.Buffer == nil {
+		s.Buffer = &Buffer{}
 	}
-	if s.Format != nil {
-		if format, err := s.Format.ToDirective(secretLoader, ""); err != nil {
-			return nil, err
-		} else {
-			syslog.SubDirectives = append(syslog.SubDirectives, format)
-		}
+	if buffer, err := s.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		syslog.SubDirectives = append(syslog.SubDirectives, buffer)
+	}
+	if s.Format == nil {
+		s.Format = &FormatRfc5424{}
+	}
+	if format, err := s.Format.ToDirective(secretLoader, ""); err != nil {
+		return nil, err
+	} else {
+		syslog.SubDirectives = append(syslog.SubDirectives, format)
 	}
 	return syslog, nil
 }

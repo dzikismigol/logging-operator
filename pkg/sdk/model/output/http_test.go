@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHTTP(t *testing.T) {
@@ -47,6 +48,7 @@ auth:
 	retryable_response_codes [503,504]
     <buffer tag,time>
       @type file
+	  chunk_limit_size 8MB
       path /buffers/test.*.buffer
       retry_forever true
       timekey 1m
@@ -64,7 +66,7 @@ auth:
 `
 
 	http := &output.HTTPOutputConfig{}
-	yaml.Unmarshal(CONFIG, http)
+	require.NoError(t, yaml.Unmarshal(CONFIG, http))
 	test := render.NewOutputPluginTest(t, http)
 	test.DiffResult(expected)
 }

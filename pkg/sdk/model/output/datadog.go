@@ -21,19 +21,19 @@ import (
 
 // +name:"Datadog"
 // +weight:"200"
-type _hugoDatadog interface{}
+type _hugoDatadog interface{} //nolint:deadcode,unused
 
 // +docName:"Datadog output plugin for Fluentd"
 //It mainly contains a proper JSON formatter and a socket handler that streams logs directly to Datadog - so no need to use a log shipper if you don't wan't to.
 //More info at https://github.com/DataDog/fluent-plugin-datadog
-type _docDatadog interface{}
+type _docDatadog interface{} //nolint:deadcode,unused
 
 // +name:"Datadog"
-// +url:"https://github.com/DataDog/fluent-plugin-datadog/releases/tag/v0.12.1"
-// +version:"0.12.1"
+// +url:"https://github.com/DataDog/fluent-plugin-datadog/releases/tag/v0.14.0"
+// +version:"0.14.0"
 // +description:"Send your logs to Datadog"
 // +status:"Testing"
-type _metaDatadog interface{}
+type _metaDatadog interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Output Config"
@@ -98,12 +98,13 @@ func (a *DatadogOutput) ToDirective(secretLoader secret.SecretLoader, id string)
 	} else {
 		datadog.Params = params
 	}
-	if a.Buffer != nil {
-		if buffer, err := a.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			datadog.SubDirectives = append(datadog.SubDirectives, buffer)
-		}
+	if a.Buffer == nil {
+		a.Buffer = &Buffer{}
+	}
+	if buffer, err := a.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		datadog.SubDirectives = append(datadog.SubDirectives, buffer)
 	}
 	return datadog, nil
 }

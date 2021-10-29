@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestKinesisFirehose(t *testing.T) {
@@ -48,6 +49,7 @@ buffer:
     </assume_role_credentials>
     <buffer tag,time>
       @type file
+	  chunk_limit_size 8MB
       path /buffers/test.*.buffer
       retry_forever true
       timekey 1m
@@ -60,7 +62,7 @@ buffer:
   </match>
 `
 	kinesis := &output.KinesisFirehoseOutputConfig{}
-	yaml.Unmarshal(CONFIG, kinesis)
+	require.NoError(t, yaml.Unmarshal(CONFIG, kinesis))
 	test := render.NewOutputPluginTest(t, kinesis)
 	test.DiffResult(expected)
 }

@@ -20,9 +20,9 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/types"
 )
 
-// +name:"Http"
+// +name:"Redis"
 // +weight:"200"
-type _hugoRedis interface{}
+type _hugoRedis interface{} //nolint:deadcode,unused
 
 // +docName:"Redis plugin for Fluentd"
 // Sends logs to Redis endpoints.
@@ -37,14 +37,14 @@ type _hugoRedis interface{}
 //       tags: "[]"
 //       flush_interval: 10s
 // ```
-type _docRedis interface{}
+type _docRedis interface{} //nolint:deadcode,unused
 
 // +name:"Redis"
 // +url:"https://github.com/fluent-plugins-nursery/fluent-plugin-redis"
 // +version:"0.3.5"
 // +description:"Sends logs to Redis endpoints."
 // +status:"GA"
-type _metaRedis interface{}
+type _metaRedis interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Output Config"
@@ -86,12 +86,13 @@ func (c *RedisOutputConfig) ToDirective(secretLoader secret.SecretLoader, id str
 	} else {
 		redis.Params = params
 	}
-	if c.Buffer != nil {
-		if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			redis.SubDirectives = append(redis.SubDirectives, buffer)
-		}
+	if c.Buffer == nil {
+		c.Buffer = &Buffer{}
+	}
+	if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		redis.SubDirectives = append(redis.SubDirectives, buffer)
 	}
 	if c.Format != nil {
 		if format, err := c.Format.ToDirective(secretLoader, ""); err != nil {

@@ -21,7 +21,7 @@ import (
 
 // +name:"Amazon Kinesis"
 // +weight:"200"
-type _hugoKinesisStream interface{}
+type _hugoKinesisStream interface{} //nolint:deadcode,unused
 
 // +docName:"Kinesis Stream output plugin for Fluentd"
 //  More info at https://github.com/awslabs/aws-fluent-plugin-kinesis#configuration-kinesis_streams
@@ -35,14 +35,14 @@ type _hugoKinesisStream interface{}
 //     format:
 //       type: json
 // ```
-type _docKinesisStream interface{}
+type _docKinesisStream interface{} //nolint:deadcode,unused
 
 // +name:"Amazon Kinesis Stream"
-// +url:"https://github.com/awslabs/aws-fluent-plugin-kinesis/releases/tag/v3.3.0"
-// +version:"3.3.0"
+// +url:"https://github.com/awslabs/aws-fluent-plugin-kinesis/releases/tag/v3.4.1"
+// +version:"3.4.1"
 // +description:"Fluent plugin for Amazon Kinesis"
 // +status:"GA"
-type _metaKinesis interface{}
+type _metaKinesis interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"KinesisStream"
@@ -158,12 +158,13 @@ func (e *KinesisStreamOutputConfig) ToDirective(secretLoader secret.SecretLoader
 			kinesis.SubDirectives = append(kinesis.SubDirectives, processCredentials)
 		}
 	}
-	if e.Buffer != nil {
-		if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			kinesis.SubDirectives = append(kinesis.SubDirectives, buffer)
-		}
+	if e.Buffer == nil {
+		e.Buffer = &Buffer{}
+	}
+	if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		kinesis.SubDirectives = append(kinesis.SubDirectives, buffer)
 	}
 	if e.Format != nil {
 		if format, err := e.Format.ToDirective(secretLoader, ""); err != nil {

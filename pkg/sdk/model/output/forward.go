@@ -22,14 +22,14 @@ import (
 
 // +name:"Forward"
 // +weight:"200"
-type _hugoForward interface{}
+type _hugoForward interface{} //nolint:deadcode,unused
 
 // +name:"Forward"
 // +url:"https://docs.fluentd.org/output/forward"
 // +version:"more info"
 // +description:"Forwards events to other fluentd nodes."
 // +status:"GA"
-type _metaForward interface{}
+type _metaForward interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 type ForwardOutput struct {
@@ -115,13 +115,15 @@ func (f *ForwardOutput) ToDirective(secretLoader secret.SecretLoader, id string)
 	} else {
 		forward.Params = params
 	}
-	if f.Buffer != nil {
-		if buffer, err := f.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			forward.SubDirectives = append(forward.SubDirectives, buffer)
-		}
+	if f.Buffer == nil {
+		f.Buffer = &Buffer{}
 	}
+	if buffer, err := f.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		forward.SubDirectives = append(forward.SubDirectives, buffer)
+	}
+
 	if f.Security != nil {
 		if format, err := f.Security.ToDirective(secretLoader, ""); err != nil {
 			return nil, err

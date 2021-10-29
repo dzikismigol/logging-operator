@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDatadog(t *testing.T) {
@@ -41,6 +42,7 @@ buffer:
 	dd_tags <KEY1:VALUE1>,<KEY2:VALUE2>
 	<buffer tag,time>
 	  @type file
+	  chunk_limit_size 8MB
 	  path /buffers/test.*.buffer
 	  retry_forever true
 	  timekey 1m
@@ -50,7 +52,7 @@ buffer:
   </match>
 `
 	s := &output.DatadogOutput{}
-	yaml.Unmarshal(CONFIG, s)
+	require.NoError(t, yaml.Unmarshal(CONFIG, s))
 	test := render.NewOutputPluginTest(t, s)
 	test.DiffResult(expected)
 }

@@ -21,7 +21,7 @@ import (
 
 // +name:"Amazon Elasticsearch"
 // +weight:"200"
-type _hugoAwsElasticsearch interface{}
+type _hugoAwsElasticsearch interface{} //nolint:deadcode,unused
 
 // +docName:"Amazon Elasticsearch output plugin for Fluentd"
 //  More info at https://github.com/atomita/fluent-plugin-aws-elasticsearch-service
@@ -35,14 +35,14 @@ type _hugoAwsElasticsearch interface{}
 //     format:
 //       type: json
 // ```
-type _docAwsElasticsearch interface{}
+type _docAwsElasticsearch interface{} //nolint:deadcode,unused
 
 // +name:"Amazon Elasticsearch"
 // +url:"https://github.com/atomita/fluent-plugin-aws-elasticsearch-service"
-// +version:"2.4.0"
+// +version:"2.4.1"
 // +description:"Fluent plugin for Amazon Elasticsearch"
 // +status:"Testing"
-type _metaAwsElasticsearch interface{}
+type _metaAwsElasticsearch interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Amazon Elasticsearch"
@@ -53,6 +53,12 @@ type AwsElasticsearchOutputConfig struct {
 
 	// logstash_prefix
 	LogstashPrefix string `json:"logstash_prefix,omitempty"`
+
+	// index_name
+	IndexName string `json:"index_name,omitempty"`
+
+	// include_timestamp
+	IncludeTimestamp string `json:"include_timestamp,omitempty"`
 
 	// include_tag_key
 	IncludeTagKey bool `json:"include_tag_key,omitempty"`
@@ -132,12 +138,14 @@ func (e *AwsElasticsearchOutputConfig) ToDirective(secretLoader secret.SecretLoa
 			kinesis.SubDirectives = append(kinesis.SubDirectives, assumeRoleCredentials)
 		}
 	}
-	if e.Buffer != nil {
-		if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			kinesis.SubDirectives = append(kinesis.SubDirectives, buffer)
-		}
+	if e.Buffer == nil {
+		e.Buffer = &Buffer{}
+	}
+
+	if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		kinesis.SubDirectives = append(kinesis.SubDirectives, buffer)
 	}
 	if e.Format != nil {
 		if format, err := e.Format.ToDirective(secretLoader, ""); err != nil {

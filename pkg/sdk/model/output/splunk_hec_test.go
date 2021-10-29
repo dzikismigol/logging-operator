@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSplunkHEC(t *testing.T) {
@@ -39,6 +40,10 @@ coerce_to_utf8: true
 non_utf8_replacement_string: bar
 sourcetype: foo
 source: foo
+buffer:
+  timekey: 1m
+  timekey_wait: 30s
+  timekey_use_utc: true
 `)
 	expected := `
 	<match **>
@@ -57,13 +62,22 @@ source: foo
 		protocol http
 		source foo
 		sourcetype foo
+		<buffer tag,time>
+		  @type file
+		  chunk_limit_size 8MB
+		  path /buffers/test.*.buffer
+		  retry_forever true
+		  timekey 1m
+		  timekey_use_utc true
+		  timekey_wait 30s
+		</buffer>
 		<fields>
 		  dummy
 		</fields>
 	</match>
 `
 	es := &output.SplunkHecOutput{}
-	yaml.Unmarshal(CONFIG, es)
+	require.NoError(t, yaml.Unmarshal(CONFIG, es))
 	test := render.NewOutputPluginTest(t, es)
 	test.DiffResult(expected)
 }

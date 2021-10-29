@@ -24,7 +24,7 @@ import (
 
 // +name:"Amazon S3"
 // +weight:"200"
-type _hugoS3 interface{}
+type _hugoS3 interface{} //nolint:deadcode,unused
 
 // +docName:"Amazon S3 plugin for Fluentd"
 //**s3** output plugin buffers event logs in local file and upload it to S3 periodically. This plugin splits files exactly by using the time of event logs (not the time when the logs are received). For example, a log '2011-01-02 message B' is reached, and then another log '2011-01-03 message B' is reached in this order, the former one is stored in "20110102.gz" file, and latter one in "20110103.gz" file.
@@ -52,14 +52,14 @@ type _hugoS3 interface{}
 //      timekey_wait: 30s
 //      timekey_use_utc: true*/
 // ```
-type _docS3 interface{}
+type _docS3 interface{} //nolint:deadcode,unused
 
 // +name:"Amazon S3"
-// +url:"https://github.com/fluent/fluent-plugin-s3/releases/tag/v1.4.0"
-// +version:"1.4.0"
+// +url:"https://github.com/fluent/fluent-plugin-s3/releases/tag/v1.6.1"
+// +version:"1.6.1"
 // +description:"Store logs in Amazon S3"
 // +status:"GA"
-type _metaS3 interface{}
+type _metaS3 interface{} //nolint:deadcode,unused
 
 const (
 	OneEyeTags            string = "tag,time,$.kubernetes.namespace_name,$.kubernetes.pod_name,$.kubernetes.container_name"
@@ -148,12 +148,14 @@ type S3OutputConfig struct {
 	Buffer *Buffer `json:"buffer,omitempty"`
 	// +docLink:"Format,../format/"
 	Format *Format `json:"format,omitempty"`
-	// +docLink:"Assume Role Credentials,#assume_role_credentials"
+	// +docLink:"Assume Role Credentials,#assume-role-credentials"
 	AssumeRoleCredentials *S3AssumeRoleCredentials `json:"assume_role_credentials,omitempty"`
-	// +docLink:"Instance Profile Credentials,#instance_profile_credentials"
+	// +docLink:"Instance Profile Credentials,#instance-profile-credentials"
 	InstanceProfileCredentials *S3InstanceProfileCredentials `json:"instance_profile_credentials,omitempty"`
-	// +docLink:"Shared Credentials,#shared_credentials"
+	// +docLink:"Shared Credentials,#shared-credentials"
 	SharedCredentials *S3SharedCredentials `json:"shared_credentials,omitempty"`
+	// Parquet compressor
+	Compress *Compress `json:"compress,omitempty"`
 	// One-eye format trigger (default:false)
 	OneEyeFormat bool `json:"oneeye_format,omitempty"`
 	// Custom cluster name (default:one-eye)
@@ -202,6 +204,24 @@ type S3SharedCredentials struct {
 	Path string `json:"path,omitempty"`
 }
 
+// +kubebuilder:object:generate=true
+// +docName:"Parquet compressor"
+// parquet compressor
+type Compress struct {
+	// Parquet compression codec. (uncompressed, snappy, gzip, lzo, brotli, lz4, zstd)(default: snappy)
+	ParquetCompressionCodec string `json:"parquet_compression_codec,omitempty"`
+	// Parquet file page size. (default: 8192 bytes)
+	ParquetPageSize string `json:"parquet_page_size,omitempty"`
+	// Parquet file row group size. (default: 128 MB)
+	ParquetRowGroupSize string `json:"parquet_row_group_size,omitempty"`
+	// Record data format type. (avro csv jsonl msgpack tsv msgpack json) (default: msgpack)
+	RecordType string `json:"record_type,omitempty"`
+	// Schema type. (avro, bigquery) (default: avro)
+	SchemaType string `json:"schema_type,omitempty"`
+	// Path to schema file.
+	SchemaFile string `json:"schema_file,omitempty"`
+}
+
 func (c *S3OutputConfig) ToDirective(secretLoader secret.SecretLoader, id string) (types.Directive, error) {
 	const pluginType = "s3"
 	s3 := &types.OutputPlugin{
@@ -235,18 +255,27 @@ func (c *S3OutputConfig) ToDirective(secretLoader secret.SecretLoader, id string
 
 	s3.Params = params
 
-	if c.Buffer != nil {
-		if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			s3.SubDirectives = append(s3.SubDirectives, buffer)
-		}
+	if c.Buffer == nil {
+		c.Buffer = &Buffer{}
+	}
+	if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		s3.SubDirectives = append(s3.SubDirectives, buffer)
 	}
 	if c.Format != nil {
 		if format, err := c.Format.ToDirective(secretLoader, ""); err != nil {
 			return nil, err
 		} else {
 			s3.SubDirectives = append(s3.SubDirectives, format)
+		}
+	}
+	if c.Compress != nil {
+		if compress, err := types.NewFlatDirective(types.PluginMeta{Directive: "compress"},
+			c.Compress, secretLoader); err != nil {
+			return nil, err
+		} else {
+			s3.SubDirectives = append(s3.SubDirectives, compress)
 		}
 	}
 	if err := c.validateAndSetCredentials(s3, secretLoader); err != nil {

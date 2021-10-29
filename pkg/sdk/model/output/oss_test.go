@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOSS(t *testing.T) {
@@ -41,6 +42,7 @@ buffer:
     path fluent-oss/logs
     <buffer tag,time>
       @type file
+	  chunk_limit_size 8MB
       path /buffers/test.*.buffer
       retry_forever true
       timekey 1m
@@ -50,7 +52,7 @@ buffer:
   </match>
 `
 	oss := &output.OSSOutput{}
-	yaml.Unmarshal(CONFIG, oss)
+	require.NoError(t, yaml.Unmarshal(CONFIG, oss))
 	test := render.NewOutputPluginTest(t, oss)
 	test.DiffResult(expected)
 }

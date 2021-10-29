@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormatSingleValueConfig(t *testing.T) {
@@ -29,6 +30,10 @@ format:
   type: single_value
   add_newline: true
   message_key: msg
+buffer:
+  timekey: 1m
+  timekey_wait: 30s
+  timekey_use_utc: true
 `)
 	expected := `
   <match **>
@@ -36,6 +41,15 @@ format:
 	@id test
 	add_path_suffix true
 	path /tmp/logs/${tag}/%Y/%m/%d.%H.%M
+    <buffer tag,time>
+      @type file
+	  chunk_limit_size 8MB
+      path /buffers/test.*.buffer
+      retry_forever true
+      timekey 1m
+      timekey_use_utc true
+      timekey_wait 30s
+    </buffer>
     <format>
       @type single_value
       add_newline true
@@ -44,7 +58,7 @@ format:
   </match>
 `
 	f := &output.FileOutputConfig{}
-	yaml.Unmarshal(CONFIG, f)
+	require.NoError(t, yaml.Unmarshal(CONFIG, f))
 	test := render.NewOutputPluginTest(t, f)
 	test.DiffResult(expected)
 }

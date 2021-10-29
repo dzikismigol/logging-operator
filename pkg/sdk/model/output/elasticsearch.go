@@ -21,7 +21,7 @@ import (
 
 // +name:"Elasticsearch"
 // +weight:"200"
-type _hugoElasticsearch interface{}
+type _hugoElasticsearch interface{} //nolint:deadcode,unused
 
 // +docName:"Elasticsearch output plugin for Fluentd"
 //More info at https://github.com/uken/fluent-plugin-elasticsearch
@@ -41,14 +41,14 @@ type _hugoElasticsearch interface{}
 //       timekey_wait: 30s
 //       timekey_use_utc: true
 // ```
-type _docElasticsearch interface{}
+type _docElasticsearch interface{} //nolint:deadcode,unused
 
 // +name:"Elasticsearch"
-// +url:"https://github.com/uken/fluent-plugin-elasticsearch/releases/tag/v4.3.3"
-// +version:"4.3.3"
+// +url:"https://github.com/uken/fluent-plugin-elasticsearch/releases/tag/v5.1.1"
+// +version:"5.1.1"
 // +description:"Send your logs to Elasticsearch"
 // +status:"GA"
-type _metaElasticsearch interface{}
+type _metaElasticsearch interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Elasticsearch"
@@ -207,6 +207,8 @@ type ElasticsearchOutput struct {
 	DefaultElasticsearchVersion string `json:"default_elasticsearch_version,omitempty"`
 	// This parameter adds additional headers to request. Example: {"token":"secret"} (default: {})
 	CustomHeaders string `json:"custom_headers,omitempty"`
+	// api_key parameter adds authentication header.
+	ApiKey *secret.Secret `json:"api_key,omitempty"`
 	// By default, the error logger won't record the reason for a 400 error from the Elasticsearch API unless you set log_level to debug. However, this results in a lot of log spam, which isn't desirable if all you want is the 400 error reasons. You can set this true to capture the 400 error reasons without all the other debug logs. (default: false)
 	LogEs400Reason bool `json:"log_es_400_reason,omitempty"`
 	// By default, record body is wrapped by 'doc'. This behavior can not handle update script requests. You can set this to suppress doc wrapping and allow record body to be untouched. (default: false)
@@ -238,6 +240,10 @@ type ElasticsearchOutput struct {
 	DataStreamEnable *bool `json:"data_stream_enable,omitempty"`
 	// You can specify Elasticsearch data stream name by this parameter. This parameter is mandatory for elasticsearch_data_stream. There are some limitations about naming rule. For more details https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-data-stream.html#indices-create-data-stream-api-path-params
 	DataStreamName string `json:"data_stream_name,omitempty"`
+	// Specify an existing index template for the data stream. If not present, a new template is created and named after the data stream. (default: data_stream_name) Further details here https://github.com/uken/fluent-plugin-elasticsearch#configuration---elasticsearch-output-data-stream
+	DataStreamTemplateName string `json:"data_stream_template_name,omitempty"`
+	// Specify an existing ILM policy to be applied to the data stream. If not present, either the specified template's or a new ILM default policy is applied. (default: data_stream_name) Further details here https://github.com/uken/fluent-plugin-elasticsearch#configuration---elasticsearch-output-data-stream
+	DataStreamILMName string `json:"data_stream_ilm_name,omitempty"`
 }
 
 func (e *ElasticsearchOutput) ToDirective(secretLoader secret.SecretLoader, id string) (types.Directive, error) {
@@ -258,12 +264,13 @@ func (e *ElasticsearchOutput) ToDirective(secretLoader secret.SecretLoader, id s
 	} else {
 		elasticsearch.Params = params
 	}
-	if e.Buffer != nil {
-		if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			elasticsearch.SubDirectives = append(elasticsearch.SubDirectives, buffer)
-		}
+	if e.Buffer == nil {
+		e.Buffer = &Buffer{}
+	}
+	if buffer, err := e.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		elasticsearch.SubDirectives = append(elasticsearch.SubDirectives, buffer)
 	}
 	return elasticsearch, nil
 }

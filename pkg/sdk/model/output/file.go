@@ -21,19 +21,19 @@ import (
 
 // +name:"File"
 // +weight:"200"
-type _hugoFile interface{}
+type _hugoFile interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"[File Output](https://docs.fluentd.org/output/file)"
 // This plugin has been designed to output logs or metrics to File.
-type _docFile interface{}
+type _docFile interface{} //nolint:deadcode,unused
 
 // +name:"File"
 // +url:"https://docs.fluentd.org/output/file"
 // +version:"more info"
 // +description:"Output plugin writes events to files"
 // +status:"GA"
-type _metaFile interface{}
+type _metaFile interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 type FileOutputConfig struct {
@@ -48,6 +48,10 @@ type FileOutputConfig struct {
 	PathSuffix string `json:"path_suffix,omitempty"`
 	// Create symlink to temporary buffered file when buffer_type is file. This is useful for tailing file content to check logs.(default: false)
 	SymlinkPath bool `json:"symlink_path,omitempty"`
+	// Compresses flushed files using gzip. No compression is performed by default.
+	Compress string `json:"compress,omitempty"`
+	// Performs compression again even if the buffer chunk is already compressed. (default: false)
+	Recompress bool `json:"recompress,omitempty"`
 	// +docLink:"Format,../format/"
 	Format *Format `json:"format,omitempty"`
 	// +docLink:"Buffer,../buffer/"
@@ -88,7 +92,7 @@ type FileOutputConfig struct {
 //	</buffer>
 //  </match>
 // ```
-type _expFile interface{}
+type _expFile interface{} //nolint:deadcode,unused
 
 func (c *FileOutputConfig) ToDirective(secretLoader secret.SecretLoader, id string) (types.Directive, error) {
 	const pluginType = "file"
@@ -105,12 +109,13 @@ func (c *FileOutputConfig) ToDirective(secretLoader secret.SecretLoader, id stri
 	} else {
 		file.Params = params
 	}
-	if c.Buffer != nil {
-		if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			file.SubDirectives = append(file.SubDirectives, buffer)
-		}
+	if c.Buffer == nil {
+		c.Buffer = &Buffer{}
+	}
+	if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		file.SubDirectives = append(file.SubDirectives, buffer)
 	}
 	if c.Format != nil {
 		if format, err := c.Format.ToDirective(secretLoader, ""); err != nil {

@@ -21,19 +21,19 @@ import (
 
 // +name:"GELF"
 // +weight:"200"
-type _hugoGELF interface{}
+type _hugoGELF interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"[GELF Output](https://github.com/hotschedules/fluent-plugin-gelf-hs)"
 // Fluentd output plugin for GELF.
-type _docGELF interface{}
+type _docGELF interface{} //nolint:deadcode,unused
 
 // +name:"Gelf"
 // +url:"https://github.com/hotschedules/fluent-plugin-gelf-hs"
 // +version:"1.0.8"
 // +description:"Output plugin writes events to GELF"
 // +status:"Testing"
-type _metaGelf interface{}
+type _metaGelf interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Output Config"
@@ -48,8 +48,6 @@ type GELFOutputConfig struct {
 	TLS *bool `json:"tls,omitempty"`
 	// TLS Options (default: {}) - for options see https://github.com/graylog-labs/gelf-rb/blob/72916932b789f7a6768c3cdd6ab69a3c942dbcef/lib/gelf/transport/tcp_tls.rb#L7-L12
 	TLSOptions map[string]string `json:"tls_options,omitempty"`
-	// +docLink:"Buffer,../buffer/"
-	Buffer *Buffer `json:"buffer,omitempty"`
 }
 
 //
@@ -63,13 +61,6 @@ type GELFOutputConfig struct {
 //  gelf:
 //    host: gelf-host
 //    port: 12201
-//    buffer:
-//      flush_thread_count: 8
-//      flush_interval: 5s
-//      chunk_limit_size: 8M
-//      queue_limit_length: 512
-//      retry_max_interval: 30
-//      retry_forever: true
 // ```
 //
 // #### Fluentd Config Result
@@ -79,19 +70,9 @@ type GELFOutputConfig struct {
 //	@id test_gelf
 //	host gelf-host
 //	port 12201
-//	<buffer tag,time>
-//	  @type file
-//	  path /buffers/test_file.*.buffer
-//    flush_thread_count 8
-//    flush_interval 5s
-//    chunk_limit_size 8M
-//    queue_limit_length 512
-//    retry_max_interval 30
-//    retry_forever true
-//	</buffer>
 //  </match>
 // ```
-type _expGELF interface{}
+type _expGELF interface{} //nolint:deadcode,unused
 
 func (s *GELFOutputConfig) ToDirective(secretLoader secret.SecretLoader, id string) (types.Directive, error) {
 	pluginType := "gelf"
@@ -107,13 +88,6 @@ func (s *GELFOutputConfig) ToDirective(secretLoader secret.SecretLoader, id stri
 		return nil, err
 	} else {
 		gelf.Params = params
-	}
-	if s.Buffer != nil {
-		if buffer, err := s.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			gelf.SubDirectives = append(gelf.SubDirectives, buffer)
-		}
 	}
 	return gelf, nil
 }

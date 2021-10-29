@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLogZ(t *testing.T) {
@@ -61,12 +62,12 @@ buffer:
 	  queue_limit_length 4096
 	  retry_forever true
       timekey 10m
-      timekey_wait 10m
+      timekey_wait 1m
     </buffer>
   </match>
 `
 	es := &output.LogZOutput{}
-	yaml.Unmarshal(CONFIG, es)
+	require.NoError(t, yaml.Unmarshal(CONFIG, es))
 	test := render.NewOutputPluginTest(t, es)
 	test.DiffResult(expected)
 }

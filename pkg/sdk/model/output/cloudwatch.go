@@ -21,7 +21,7 @@ import (
 
 // +name:"Amazon CloudWatch"
 // +weight:"200"
-type _hugoCloudWatch interface{}
+type _hugoCloudWatch interface{} //nolint:deadcode,unused
 
 // +docName:"CloudWatch output plugin for Fluentd"
 //This plugin has been designed to output logs or metrics to Amazon CloudWatch.
@@ -50,14 +50,14 @@ type _hugoCloudWatch interface{}
 //      timekey_wait: 30s
 //      timekey_use_utc: true
 // ```
-type _docCloudWatch interface{}
+type _docCloudWatch interface{} //nolint:deadcode,unused
 
 // +name:"Amazon CloudWatch"
-// +url:"https://github.com/fluent-plugins-nursery/fluent-plugin-cloudwatch-logs/releases/tag/v0.13.2"
-// +version:"0.13.2"
+// +url:"https://github.com/fluent-plugins-nursery/fluent-plugin-cloudwatch-logs/releases/tag/v0.14.2"
+// +version:"0.14.2"
 // +description:"Send your logs to AWS CloudWatch"
 // +status:"GA"
-type _metaCloudWatch interface{}
+type _metaCloudWatch interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Output Config"
@@ -96,13 +96,13 @@ type CloudWatchOutput struct {
 	// Specified field of records as AWS tags for the log group
 	LogGroupAwsTagsKey string `json:"log_group_aws_tags_key,omitempty"`
 	// Name of log group to store logs
-	LogGroupName string `json:"log_group_name,omitempty"`
+	LogGroupName string `json:"log_group_name"`
 	// Specified field of records as log group name
 	LogGroupNameKey string `json:"log_group_name_key,omitempty"`
 	// Output rejected_log_events_info request log. (default: false)
 	LogRejectedRequest string `json:"log_rejected_request,omitempty"`
 	// Name of log stream to store logs
-	LogStreamName string `json:"log_stream_name,omitempty"`
+	LogStreamName string `json:"log_stream_name"`
 	// Specified field of records as log stream name
 	LogStreamNameKey string `json:"log_stream_name_key,omitempty"`
 	// Maximum number of events to send at once (default: 10000)
@@ -156,12 +156,13 @@ func (c *CloudWatchOutput) ToDirective(secretLoader secret.SecretLoader, id stri
 	} else {
 		cloudwatch.Params = params
 	}
-	if c.Buffer != nil {
-		if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			cloudwatch.SubDirectives = append(cloudwatch.SubDirectives, buffer)
-		}
+	if c.Buffer == nil {
+		c.Buffer = &Buffer{}
+	}
+	if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		cloudwatch.SubDirectives = append(cloudwatch.SubDirectives, buffer)
 	}
 	return cloudwatch, nil
 }

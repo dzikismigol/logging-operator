@@ -20,18 +20,19 @@ import (
 
 // +name:"ClusterOutput"
 // +weight:"200"
-type _hugoClusterOutput interface{}
+type _hugoClusterOutput interface{} //nolint:deadcode,unused
 
 // +name:"ClusterOutput"
 // +version:"v1beta1"
 // +description:"ClusterOutput is the Schema for the clusteroutputs API"
-type _metaClusterOutput interface{}
+type _metaClusterOutput interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:categories=logging-all
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Active",type="boolean",JSONPath=".status.active",description="Is the output active?"
 // +kubebuilder:printcolumn:name="Problems",type="integer",JSONPath=".status.problemsCount",description="Number of problems"
+// +kubebuilder:storageversion
 
 // ClusterOutput is the Schema for the clusteroutputs API
 type ClusterOutput struct {

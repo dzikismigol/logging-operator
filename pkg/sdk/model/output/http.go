@@ -22,7 +22,7 @@ import (
 
 // +name:"Http"
 // +weight:"200"
-type _hugoHTTP interface{}
+type _hugoHTTP interface{} //nolint:deadcode,unused
 
 // +docName:"Http plugin for Fluentd"
 // Sends logs to HTTP/HTTPS endpoints.
@@ -37,14 +37,14 @@ type _hugoHTTP interface{}
 //       tags: "[]"
 //       flush_interval: 10s
 // ```
-type _docHTTP interface{}
+type _docHTTP interface{} //nolint:deadcode,unused
 
 // +name:"Http"
 // +url:"https://docs.fluentd.org/output/http"
 // +version:"more info"
 // +description:"Sends logs to HTTP/HTTPS endpoints."
 // +status:"GA"
-type _metaHTTP interface{}
+type _metaHTTP interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 // +docName:"Output Config"
@@ -87,7 +87,7 @@ type HTTPOutputConfig struct {
 	ErrorResponseAsUnrecoverable *bool `json:"error_response_as_unrecoverable,omitempty"`
 	// List of retryable response codes. If the response code is included in this list, the plugin retries the buffer flush. (default: [503])
 	RetryableResponseCodes []int `json:"retryable_response_codes,omitempty"`
-	// +docLink:"HTTP auth,#http_auth"
+	// +docLink:"HTTP auth,#http-auth-config"
 	Auth *HTTPAuth `json:"auth,omitempty"`
 	// +docLink:"Buffer,../buffer/"
 	Buffer *Buffer `json:"buffer,omitempty"`
@@ -108,12 +108,14 @@ func (c *HTTPOutputConfig) ToDirective(secretLoader secret.SecretLoader, id stri
 	} else {
 		http.Params = params
 	}
-	if c.Buffer != nil {
-		if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
-			return nil, err
-		} else {
-			http.SubDirectives = append(http.SubDirectives, buffer)
-		}
+
+	if c.Buffer == nil {
+		c.Buffer = &Buffer{}
+	}
+	if buffer, err := c.Buffer.ToDirective(secretLoader, id); err != nil {
+		return nil, err
+	} else {
+		http.SubDirectives = append(http.SubDirectives, buffer)
 	}
 	if c.Format != nil {
 		if format, err := c.Format.ToDirective(secretLoader, ""); err != nil {

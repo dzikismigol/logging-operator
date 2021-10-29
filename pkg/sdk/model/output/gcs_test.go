@@ -20,6 +20,7 @@ import (
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/output"
 	"github.com/banzaicloud/logging-operator/pkg/sdk/model/render"
 	"github.com/ghodss/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGCS(t *testing.T) {
@@ -41,6 +42,7 @@ buffer:
     project logging-example
     <buffer tag,time>
       @type file
+	  chunk_limit_size 8MB
       path /buffers/test.*.buffer
       retry_forever true
       timekey 1m
@@ -50,7 +52,7 @@ buffer:
   </match>
 `
 	g := &output.GCSOutput{}
-	yaml.Unmarshal(CONFIG, g)
+	require.NoError(t, yaml.Unmarshal(CONFIG, g))
 	test := render.NewOutputPluginTest(t, g)
 	test.DiffResult(expected)
 }

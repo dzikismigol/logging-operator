@@ -21,12 +21,12 @@ import (
 
 // +name:"OutputSpec"
 // +weight:"200"
-type _hugoOutputSpec interface{}
+type _hugoOutputSpec interface{} //nolint:deadcode,unused
 
 // +name:"OutputSpec"
 // +version:"v1beta1"
 // +description:"OutputSpec defines the desired state of Output"
-type _metaOutputSpec interface{}
+type _metaOutputSpec interface{} //nolint:deadcode,unused
 
 // OutputSpec defines the desired state of Output
 type OutputSpec struct {
@@ -54,6 +54,7 @@ type OutputSpec struct {
 	RedisOutputConfig            *output.RedisOutputConfig            `json:"redis,omitempty"`
 	SyslogOutputConfig           *output.SyslogOutputConfig           `json:"syslog,omitempty"`
 	GELFOutputConfig             *output.GELFOutputConfig             `json:"gelf,omitempty"`
+	SQSOutputConfig              *output.SQSOutputConfig              `json:"sqs,omitempty"`
 }
 
 // OutputStatus defines the observed state of Output
@@ -68,6 +69,7 @@ type OutputStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Active",type="boolean",JSONPath=".status.active",description="Is the output active?"
 // +kubebuilder:printcolumn:name="Problems",type="integer",JSONPath=".status.problemsCount",description="Number of problems"
+// +kubebuilder:storageversion
 
 // Output is the Schema for the outputs API
 type Output struct {

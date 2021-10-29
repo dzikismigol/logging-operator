@@ -29,7 +29,7 @@ import (
 
 // +name:"LoggingSpec"
 // +weight:"200"
-type _hugoLoggingSpec interface{}
+type _hugoLoggingSpec interface{} //nolint:deadcode,unused
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
@@ -37,7 +37,7 @@ type _hugoLoggingSpec interface{}
 // +name:"Logging"
 // +version:"v1beta1"
 // +description:"Logging system configuration"
-type _metaLoggingSpec interface{}
+type _metaLoggingSpec interface{} //nolint:deadcode,unused
 
 // LoggingSpec defines the desired state of Logging
 type LoggingSpec struct {
@@ -53,6 +53,8 @@ type LoggingSpec struct {
 	FluentdSpec *FluentdSpec `json:"fluentd,omitempty"`
 	// Default flow for unmatched logs. This Flow configuration collects all logs that didn't matched any other Flow.
 	DefaultFlowSpec *DefaultFlowSpec `json:"defaultFlow,omitempty"`
+	// GlobalOutput name to flush ERROR events to
+	ErrorOutputRef string `json:"errorOutputRef,omitempty"`
 	// Global filters to apply on logs before any match or filter mechanism.
 	GlobalFilters []Filter `json:"globalFilters,omitempty"`
 	// Limit namespaces to watch Flow and Output custom reasources.
@@ -80,6 +82,7 @@ type LoggingStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=loggings,scope=Cluster,categories=logging-all
+// +kubebuilder:storageversion
 
 // Logging is the Schema for the loggings API
 type Logging struct {
@@ -110,10 +113,13 @@ type DefaultFlowSpec struct {
 }
 
 const (
-	DefaultFluentbitImageRepository = "fluent/fluent-bit"
-	DefaultFluentbitImageTag        = "1.7.4"
-	DefaultFluentdImageRepository   = "ghcr.io/banzaicloud/fluentd"
-	DefaultFluentdImageTag          = "v1.11.5-alpine-21"
+	DefaultFluentbitImageRepository         = "fluent/fluent-bit"
+	DefaultFluentbitImageTag                = "1.8.8"
+	DefaultFluentdImageRepository           = "ghcr.io/banzaicloud/fluentd"
+	DefaultFluentdImageTag                  = "v1.13.3-alpine-11"
+	DefaultFluentdBufferStorageVolumeName   = "fluentd-buffer"
+	DefaultFluentdDrainWatchImageRepository = "ghcr.io/banzaicloud/fluentd-drain-watch"
+	DefaultFluentdDrainWatchImageTag        = "v0.0.1"
 )
 
 // SetDefaults fills empty attributes
@@ -194,7 +200,7 @@ func (l *Logging) SetDefaults() error {
 				l.Spec.FluentdSpec.BufferStorageVolume.PersistentVolumeClaim.PersistentVolumeClaimSpec.VolumeMode = persistentVolumeModePointer(v1.PersistentVolumeFilesystem)
 			}
 			if l.Spec.FluentdSpec.BufferStorageVolume.PersistentVolumeClaim.PersistentVolumeSource.ClaimName == "" {
-				l.Spec.FluentdSpec.BufferStorageVolume.PersistentVolumeClaim.PersistentVolumeSource.ClaimName = "fluentd-buffer"
+				l.Spec.FluentdSpec.BufferStorageVolume.PersistentVolumeClaim.PersistentVolumeSource.ClaimName = DefaultFluentdBufferStorageVolumeName
 			}
 		}
 		if l.Spec.FluentdSpec.VolumeModImage.Repository == "" {
@@ -242,11 +248,17 @@ func (l *Logging) SetDefaults() error {
 		if l.Spec.FluentdSpec.Scaling == nil {
 			l.Spec.FluentdSpec.Scaling = new(FluentdScaling)
 		}
-		if l.Spec.FluentdSpec.Scaling.Replicas == 0 {
-			l.Spec.FluentdSpec.Scaling.Replicas = 1
-		}
 		if l.Spec.FluentdSpec.Scaling.PodManagementPolicy == "" {
 			l.Spec.FluentdSpec.Scaling.PodManagementPolicy = "OrderedReady"
+		}
+		if l.Spec.FluentdSpec.Scaling.Drain.Image.Repository == "" {
+			l.Spec.FluentdSpec.Scaling.Drain.Image.Repository = DefaultFluentdDrainWatchImageRepository
+		}
+		if l.Spec.FluentdSpec.Scaling.Drain.Image.Tag == "" {
+			l.Spec.FluentdSpec.Scaling.Drain.Image.Tag = DefaultFluentdDrainWatchImageTag
+		}
+		if l.Spec.FluentdSpec.Scaling.Drain.Image.PullPolicy == "" {
+			l.Spec.FluentdSpec.Scaling.Drain.Image.PullPolicy = "IfNotPresent"
 		}
 		if l.Spec.FluentdSpec.FluentLogDestination == "" {
 			l.Spec.FluentdSpec.FluentLogDestination = "null"
@@ -280,6 +292,33 @@ func (l *Logging) SetDefaults() error {
 			}
 		}
 	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFreeSpace {
+		if l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFreeSpaceThreshold == 0 {
+			l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFreeSpaceThreshold = 90
+		}
+	}
+
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFileNumber {
+		if l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFileNumberMax == 0 {
+			l.Spec.FluentdSpec.ReadinessDefaultCheck.BufferFileNumberMax = 5000
+		}
+	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.InitialDelaySeconds == 0 {
+		l.Spec.FluentdSpec.ReadinessDefaultCheck.InitialDelaySeconds = 5
+	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.TimeoutSeconds == 0 {
+		l.Spec.FluentdSpec.ReadinessDefaultCheck.TimeoutSeconds = 3
+	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.PeriodSeconds == 0 {
+		l.Spec.FluentdSpec.ReadinessDefaultCheck.PeriodSeconds = 30
+	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.SuccessThreshold == 0 {
+		l.Spec.FluentdSpec.ReadinessDefaultCheck.SuccessThreshold = 3
+	}
+	if l.Spec.FluentdSpec.ReadinessDefaultCheck.FailureThreshold == 0 {
+		l.Spec.FluentdSpec.ReadinessDefaultCheck.FailureThreshold = 1
+	}
+
 	if l.Spec.FluentbitSpec != nil { // nolint:nestif
 		if l.Spec.FluentbitSpec.PosisionDBLegacy != nil {
 			return errors.New("`position_db` field is deprecated, use `positiondb`")
@@ -444,6 +483,7 @@ func (l *Logging) SetDefaults() error {
 			l.Spec.FluentbitSpec.TLS.Enabled = util.BoolPointer(false)
 		}
 	}
+
 	return nil
 }
 
@@ -471,4 +511,38 @@ func init() {
 
 func persistentVolumeModePointer(mode v1.PersistentVolumeMode) *v1.PersistentVolumeMode {
 	return &mode
+}
+
+// FluentdObjectMeta creates an objectMeta for resource fluentd
+func (l *Logging) FluentdObjectMeta(name, component string) metav1.ObjectMeta {
+	o := metav1.ObjectMeta{
+		Name:      l.QualifiedName(name),
+		Namespace: l.Spec.ControlNamespace,
+		Labels:    l.GetFluentdLabels(component),
+		OwnerReferences: []metav1.OwnerReference{
+			{
+				APIVersion: l.APIVersion,
+				Kind:       l.Kind,
+				Name:       l.Name,
+				UID:        l.UID,
+				Controller: util.BoolPointer(true),
+			},
+		},
+	}
+	return o
+}
+
+func (l *Logging) GetFluentdLabels(component string) map[string]string {
+	return util.MergeLabels(
+		l.Spec.FluentdSpec.Labels,
+		map[string]string{
+			"app.kubernetes.io/name":      "fluentd",
+			"app.kubernetes.io/component": component,
+		},
+		GenerateLoggingRefLabels(l.ObjectMeta.GetName()),
+	)
+}
+
+func GenerateLoggingRefLabels(loggingRef string) map[string]string {
+	return map[string]string{"app.kubernetes.io/managed-by": loggingRef}
 }

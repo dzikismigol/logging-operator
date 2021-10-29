@@ -23,14 +23,14 @@ import (
 
 // +name:"Buffer"
 // +weight:"200"
-type _hugoBuffer interface{}
+type _hugoBuffer interface{} //nolint:deadcode,unused
 
 // +name:"Buffer"
 // +url:"https://docs.fluentd.org/configuration/buffer-section"
 // +version:"mode info"
 // +description:"Fluentd event buffer"
 // +status:"GA"
-type _metaBuffer interface{}
+type _metaBuffer interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 
@@ -41,8 +41,8 @@ type Buffer struct {
 	Tags string `json:"tags,omitempty"`
 	// The path where buffer chunks are stored. The '*' is replaced with random characters. It's highly recommended to leave this default. (default: operator generated)
 	Path string `json:"path,omitempty"`
-	// The max size of each chunks: events will be written into chunks until the size of chunks become this size
-	ChunkLimitSize string `json:"chunk_limit_size,omitempty"`
+	// The max size of each chunks: events will be written into chunks until the size of chunks become this size (default: 8MB)
+	ChunkLimitSize string `json:"chunk_limit_size,omitempty" plugin:"default:8MB"`
 	// The max number of events that each chunks can store in it
 	ChunkLimitRecords int `json:"chunk_limit_records,omitempty"`
 	// The size limitation of this buffer plugin instance. Once the total size of stored buffer reached this threshold, all append operations will fail with error (and data will be lost)
@@ -102,7 +102,7 @@ type Buffer struct {
 	// +kubebuilder:validation:Optional
 	Timekey string `json:"timekey" plugin:"default:10m"`
 	// Output plugin writes chunks after timekey_wait seconds later after timekey expiration
-	TimekeyWait string `json:"timekey_wait,omitempty" plugin:"default:10m"`
+	TimekeyWait string `json:"timekey_wait,omitempty" plugin:"default:1m"`
 	// Output plugin decides to use UTC or not to format placeholders using timekey
 	TimekeyUseUtc bool `json:"timekey_use_utc,omitempty"`
 	// The timezone (-0700 or Asia/Tokyo) string for formatting timekey placeholders

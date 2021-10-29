@@ -15,6 +15,8 @@
 package types
 
 import (
+	"encoding/json"
+
 	"emperror.dev/errors"
 )
 
@@ -44,6 +46,20 @@ func (s *SystemBuilder) RegisterFlow(f *Flow) error {
 	return nil
 }
 
+// Check if we need to register a flow at all?
+func (s *SystemBuilder) RegisterErrorFlow(f *Flow) error {
+	if f.PluginMeta.Tag != "@ERROR" && f.FlowID != "@ERROR" {
+		return errors.New("you can only register Error flow with @ERROR label")
+	}
+	for _, e := range s.flows {
+		if e.FlowLabel == f.FlowLabel {
+			return errors.New("Flow already exists")
+		}
+	}
+	s.flows = append(s.flows, f)
+	return nil
+}
+
 func (s *SystemBuilder) RegisterDefaultFlow(f *Flow) error {
 	for _, e := range s.flows {
 		if e.FlowLabel == f.FlowLabel {
@@ -52,6 +68,11 @@ func (s *SystemBuilder) RegisterDefaultFlow(f *Flow) error {
 	}
 	s.flows = append(s.flows, f)
 	s.router.Params["default_route"] = f.FlowLabel
+	metricsLabels, err := json.Marshal(map[string]string{"id": f.FlowID})
+	if err != nil {
+		return errors.Wrapf(err, "marshaling default_metrics_labels")
+	}
+	s.router.Params["default_metrics_labels"] = string(metricsLabels)
 	return nil
 }
 

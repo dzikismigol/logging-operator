@@ -24,12 +24,12 @@ import (
 
 // +name:"FluentbitSpec"
 // +weight:"200"
-type _hugoFluentbitSpec interface{}
+type _hugoFluentbitSpec interface{} //nolint:deadcode,unused
 
 // +name:"FluentbitSpec"
 // +version:"v1beta1"
 // +description:"FluentbitSpec defines the desired state of Fluentbit"
-type _metaFluentbitSpec interface{}
+type _metaFluentbitSpec interface{} //nolint:deadcode,unused
 
 // +kubebuilder:object:generate=true
 
@@ -37,6 +37,7 @@ type _metaFluentbitSpec interface{}
 type FluentbitSpec struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
+	EnvVars     []corev1.EnvVar   `json:"envVars,omitempty"`
 	Image       ImageSpec         `json:"image,omitempty"`
 	TLS         *FluentbitTLS     `json:"tls,omitempty"`
 	TargetHost  string            `json:"targetHost,omitempty"`
@@ -82,6 +83,8 @@ type FluentbitSpec struct {
 	ForwardOptions          *ForwardOptions              `json:"forwardOptions,omitempty"`
 	EnableUpstream          bool                         `json:"enableUpstream,omitempty"`
 	ServiceAccountOverrides *typeoverride.ServiceAccount `json:"serviceAccount,omitempty"`
+	DNSPolicy               corev1.DNSPolicy             `json:"dnsPolicy,omitempty"`
+	DNSConfig               *corev1.PodDNSConfig         `json:"dnsConfig,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -176,6 +179,8 @@ type InputTail struct {
 	ParserN []string `json:"Parser_N,omitempty"`
 	// If enabled, the plugin will recombine split Docker log lines before passing them to any parser as configured above. This mode cannot be used at the same time as Multiline. (default:Off)
 	DockerMode string `json:"Docker_Mode,omitempty"`
+	// Specify an optional parser for the first line of the docker multiline mode.
+	DockerModeParser string `json:"Docker_Mode_Parser,omitempty"`
 	//Wait period time in seconds to flush queued unfinished split lines. (default:4)
 	DockerModeFlush string `json:"Docker_Mode_Flush,omitempty"`
 }
@@ -279,4 +284,6 @@ type ForwardOptions struct {
 	RequireAckResponse bool   `json:"Require_ack_response,omitempty"`
 	Tag                string `json:"Tag,omitempty"`
 	RetryLimit         string `json:"Retry_Limit,omitempty"`
+	// `storage.total_limit_size` Limit the maximum number of Chunks in the filesystem for the current output logical destination.
+	StorageTotalLimitSize string `json:"storage.total_limit_size,omitempty"`
 }

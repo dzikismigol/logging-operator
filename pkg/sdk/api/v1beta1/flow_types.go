@@ -21,12 +21,12 @@ import (
 
 // +name:"FlowSpec"
 // +weight:"200"
-type _hugoFlowSpec interface{}
+type _hugoFlowSpec interface{} //nolint:deadcode,unused
 
 // +name:"FlowSpec"
 // +version:"v1beta1"
 // +description:"FlowSpec is the Kubernetes spec for Flows"
-type _metaFlowSpec interface{}
+type _metaFlowSpec interface{} //nolint:deadcode,unused
 
 // FlowSpec is the Kubernetes spec for Flows
 type FlowSpec struct {
@@ -60,20 +60,21 @@ type Exclude struct {
 
 // Filter definition for FlowSpec
 type Filter struct {
-	StdOut            *filter.StdOutFilterConfig `json:"stdout,omitempty"`
-	Parser            *filter.ParserConfig       `json:"parser,omitempty"`
-	TagNormaliser     *filter.TagNormaliser      `json:"tag_normaliser,omitempty"`
-	Dedot             *filter.DedotFilterConfig  `json:"dedot,omitempty"`
-	RecordTransformer *filter.RecordTransformer  `json:"record_transformer,omitempty"`
-	RecordModifier    *filter.RecordModifier     `json:"record_modifier,omitempty"`
-	GeoIP             *filter.GeoIP              `json:"geoip,omitempty"`
-	Concat            *filter.Concat             `json:"concat,omitempty"`
-	DetectExceptions  *filter.DetectExceptions   `json:"detectExceptions,omitempty"`
-	Grep              *filter.GrepConfig         `json:"grep,omitempty"`
-	Prometheus        *filter.PrometheusConfig   `json:"prometheus,omitempty"`
-	Throttle          *filter.Throttle           `json:"throttle,omitempty"`
-	SumoLogic         *filter.SumoLogic          `json:"sumologic,omitempty"`
-	EnhanceK8s        *filter.EnhanceK8s         `json:"enhanceK8s,omitempty"`
+	StdOut              *filter.StdOutFilterConfig        `json:"stdout,omitempty"`
+	Parser              *filter.ParserConfig              `json:"parser,omitempty"`
+	TagNormaliser       *filter.TagNormaliser             `json:"tag_normaliser,omitempty"`
+	Dedot               *filter.DedotFilterConfig         `json:"dedot,omitempty"`
+	RecordTransformer   *filter.RecordTransformer         `json:"record_transformer,omitempty"`
+	RecordModifier      *filter.RecordModifier            `json:"record_modifier,omitempty"`
+	GeoIP               *filter.GeoIP                     `json:"geoip,omitempty"`
+	Concat              *filter.Concat                    `json:"concat,omitempty"`
+	DetectExceptions    *filter.DetectExceptions          `json:"detectExceptions,omitempty"`
+	Grep                *filter.GrepConfig                `json:"grep,omitempty"`
+	Prometheus          *filter.PrometheusConfig          `json:"prometheus,omitempty"`
+	Throttle            *filter.Throttle                  `json:"throttle,omitempty"`
+	SumoLogic           *filter.SumoLogic                 `json:"sumologic,omitempty"`
+	EnhanceK8s          *filter.EnhanceK8s                `json:"enhanceK8s,omitempty"`
+	KubeEventsTimestamp *filter.KubeEventsTimestampConfig `json:"kube_events_timestamp,omitempty"`
 }
 
 // FlowStatus defines the observed state of Flow
@@ -88,6 +89,7 @@ type FlowStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Active",type="boolean",JSONPath=".status.active",description="Is the flow active?"
 // +kubebuilder:printcolumn:name="Problems",type="integer",JSONPath=".status.problemsCount",description="Number of problems"
+// +kubebuilder:storageversion
 
 // Flow Kubernetes object
 type Flow struct {
